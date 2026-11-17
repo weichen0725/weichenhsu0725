@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小宸老師設計© 互動教材</title>
+<meta name="description" content="小宸老師設計的特教互動教材與 3D 情境模擬遊戲。">
+<style>
+  :root { --bg: #fff8f0; --ink: #3b302b; --soft: #8a6f5c; --coral: #ff7b6b; --pink: #ff8fab; --blue: #4cc9f0; --card: #ffffff; --line: #f1e3d3; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; }
+  header { padding: 56px 20px 28px; text-align: center; }
+  .brand { display: inline-block; padding: 6px 16px; border-radius: 999px; background: #ffe8de; color: #b4572a; font-weight: 700; font-size: 15px; letter-spacing: .05em; }
+  h1 { margin: 16px 0 8px; font-size: clamp(30px, 5vw, 44px); letter-spacing: .02em; }
+  header p { margin: 0 auto; max-width: 560px; color: var(--soft); font-size: 17px; }
+  main { max-width: 980px; margin: 0 auto; padding: 12px 20px 64px; display: grid; gap: 22px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+  .card { background: var(--card); border: 2px solid var(--line); border-radius: 26px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 28px rgba(140, 90, 60, .08); transition: transform .15s ease, box-shadow .15s ease; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(140, 90, 60, .14); }
+  .cover { height: 150px; display: grid; place-items: center; font-size: 64px; background: linear-gradient(135deg, #ffe3ec, #e3f6fd); }
+  .body { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .body h2 { margin: 0; font-size: 22px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 13px; padding: 2px 10px; border-radius: 999px; background: #fff1e6; color: #a0522d; }
+  .tag.b { background: #e6f7fd; color: #1d6f91; }
+  .body p { margin: 0; color: var(--soft); font-size: 15px; flex: 1; }
+  .go { align-self: flex-start; margin-top: 4px; text-decoration: none; color: #fff; background: var(--coral); padding: 10px 22px; border-radius: 999px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 0 #e0574a; }
+  .go:active { transform: translateY(2px); box-shadow: 0 2px 0 #e0574a; }
+  .soon { display: grid; place-items: center; text-align: center; padding: 28px; border-style: dashed; color: var(--soft); box-shadow: none; }
+  .soon:hover { transform: none; box-shadow: none; }
+  footer { text-align: center; color: var(--soft); font-size: 14px; padding: 0 20px 40px; }
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">小宸老師設計©</span>
+  <h1>互動教材作品集</h1>
+  <p>給特殊需求學生的 3D 情境模擬與互動練習，打開瀏覽器就能玩，電腦、平板、手機都可以用。</p>
+</header>
+<main>
+  <article class="card">
+    <div class="cover" aria-hidden="true">🏡</div>
+    <div class="body">
+      <h2>3D 生活管理小達人</h2>
+      <div class="tags"><span class="tag">自我照顧</span><span class="tag">家庭生活</span><span class="tag">社區參與</span><span class="tag">危機應變</span><span class="tag b">國小特教</span></div>
+      <p>在 3D 住家、商店、校園裡練習工作分析步驟：洗手穿衣、整理書包、打掃回收、廚房安全、餐後收拾、購物搭車與緊急求助。有語音、注音、三種提示層級和星星扭蛋獎勵。</p>
+      <a class="go" href="./life-management-3d/">開始玩 ▶</a>
+    </div>
+  </article>
+  <article class="card soon">
+    <div>更多作品陸續上架中…</div>
+  </article>
+</main>
+<footer>小宸老師設計©2026.11</footer>
+</body>
+</html>
