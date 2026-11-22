@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>時間小達人：我的生活任務</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#FF8C00;--yellow:#FFD600;--green:#4CAF50;--blue:#2196F3;
+  --purple:#9C27B0;--red:#F44336;--teal:#009688;
+  --bg:#FFF9F0;--shadow:0 4px 16px rgba(0,0,0,0.13);--radius:16px;
+  --speak:#FF5722;
+}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);
+  min-height:100vh;overflow-x:hidden;padding-bottom:110px}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;padding:20px 16px;flex-direction:column;align-items:center}
+.screen.active{display:flex}
+
+/* ── TTS FLOATING BUTTON ── */
+#fab{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  z-index:500;display:flex;align-items:center;gap:10px;
+  background:var(--speak);color:#fff;border:none;
+  border-radius:99px;padding:14px 30px;font-size:20px;font-weight:900;
+  font-family:'Noto Sans TC',sans-serif;cursor:pointer;
+  box-shadow:0 6px 20px rgba(255,87,34,.45);
+  transition:transform .15s,box-shadow .15s;
+}
+#fab:hover{transform:translateX(-50%) translateY(-3px);box-shadow:0 9px 24px rgba(255,87,34,.5)}
+#fab:active{transform:translateX(-50%) translateY(1px)}
+#fab.speaking{animation:spk 1s ease-in-out infinite}
+@keyframes spk{0%,100%{box-shadow:0 6px 20px rgba(255,87,34,.45)}
+  50%{box-shadow:0 6px 32px rgba(255,87,34,.8)}}
+
+/* ── TTS SPEED BAR ── */
+#spd-bar{
+  position:fixed;top:10px;right:12px;z-index:600;
+  display:flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.92);border-radius:99px;
+  padding:6px 14px;box-shadow:0 2px 10px rgba(0,0,0,.14);
+}
+#spd-bar label{font-size:13px;font-weight:700;color:#555}
+#spd-range{width:80px;cursor:pointer;accent-color:var(--speak)}
+
+/* ── HEADER ── */
+.game-header{width:100%;max-width:740px;display:flex;align-items:center;
+  justify-content:space-between;margin-bottom:16px}
+.level-badge{background:var(--orange);color:#fff;font-weight:900;font-size:14px;
+  padding:6px 16px;border-radius:99px}
+.back-btn{background:none;border:none;font-size:26px;cursor:pointer;
+  padding:4px 8px;border-radius:8px;transition:background .15s}
+.back-btn:hover{background:rgba(0,0,0,.07)}
+
+/* ── TITLE ── */
+#screen-title{background:linear-gradient(150deg,#FFF3CD,#FFE4B5);justify-content:center}
+.title-emoji{font-size:78px;text-align:center;margin-bottom:14px;
+  animation:bounce 2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+.title-text{font-size:34px;font-weight:900;color:#5D3A00;text-align:center;margin-bottom:6px}
+.title-sub{font-size:17px;color:#8B5E00;text-align:center;margin-bottom:30px}
+.level-map{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:640px}
+.lv-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:20px 22px;width:280px;cursor:pointer;border:3px solid transparent;
+  transition:transform .2s,box-shadow .2s;position:relative}
+.lv-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.17)}
+.lv-card[data-l="1"]{border-color:var(--orange)}.lv-card[data-l="2"]{border-color:var(--blue)}
+.lv-card[data-l="3"]{border-color:var(--green)}.lv-card[data-l="4"]{border-color:var(--purple)}
+.lc-icon{font-size:36px}.lc-num{font-size:11px;font-weight:700;color:#aaa;margin:5px 0 2px}
+.lc-name{font-size:18px;font-weight:900;color:#333;margin-bottom:3px}
+.lc-hint{font-size:13px;color:#777}
+
+/* ── SPEAK ICON (inline small button) ── */
+.si{display:inline-flex;align-items:center;justify-content:center;
+  background:var(--speak);color:#fff;border:none;border-radius:50%;
+  width:28px;height:28px;font-size:14px;cursor:pointer;
+  margin-left:6px;flex-shrink:0;vertical-align:middle;
+  box-shadow:0 2px 6px rgba(255,87,34,.35);transition:transform .15s}
+.si:hover{transform:scale(1.15)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;
+  padding:12px 28px;border-radius:99px;border:none;
+  font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:17px;
+  cursor:pointer;transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.btn-orange{background:var(--orange);color:#fff}.btn-green{background:var(--green);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}.btn-gray{background:#E0E0E0;color:#555}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-sm{padding:8px 18px;font-size:14px}.btn-lg{padding:16px 44px;font-size:21px}
+
+/* ── GAME CARD ── */
+.game-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:22px;width:100%;max-width:740px;margin-bottom:16px}
+.game-title{font-size:22px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.game-inst{font-size:16px;color:#444;margin-bottom:16px;line-height:1.7;
+  background:#FFF8F0;border-left:4px solid var(--orange);padding:10px 14px;border-radius:0 10px 10px 0}
+
+/* ── POPUP ── */
+.popup-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);
+  z-index:1000;align-items:center;justify-content:center}
+.popup-ov.show{display:flex}
+.popup-box{background:#fff;border-radius:24px;padding:36px;text-align:center;
+  max-width:400px;width:92%;animation:popIn .3s ease}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.pop-emoji{font-size:56px;margin-bottom:10px}
+.pop-title{font-size:25px;font-weight:900;margin-bottom:8px}
+.pop-msg{font-size:16px;color:#444;margin-bottom:20px;white-space:pre-line;line-height:1.65}
+.pop-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* ── CONFETTI ── */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden}
+.cf{position:absolute;width:10px;height:10px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}
+  100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* ── PROGRESS DOTS ── */
+.pdots{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+.dot{width:13px;height:13px;border-radius:50%;background:#DDD;transition:all .3s}
+.dot.done{background:var(--green)}.dot.cur{background:var(--orange);transform:scale(1.35)}
+
+/* ─────────── LEVEL 1 ─────────── */
+.pool{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;
+  min-height:54px;padding:12px;background:#F5F5F5;border-radius:12px}
+.achip{background:#fff;border-radius:99px;padding:10px 18px;
+  font-size:16px;font-weight:700;cursor:pointer;border:2.5px solid #DDD;
+  transition:all .2s;user-select:none;display:flex;align-items:center;gap:6px}
+.achip:hover{border-color:var(--orange);transform:scale(1.06)}
+.achip.sel{border-color:var(--orange);background:#FFF3E0;transform:scale(1.06)}
+.hint-bar{font-size:15px;font-weight:700;color:#555;
+  text-align:center;min-height:26px;margin-bottom:12px;padding:6px;
+  border-radius:8px;transition:background .3s}
+.hint-bar.active{background:#FFF3E0;color:var(--orange)}
+.zones{display:flex;gap:10px;flex-wrap:wrap}
+.zone{flex:1;min-width:140px;border-radius:14px;padding:14px;
+  border:3px dashed #CCC;min-height:110px;cursor:pointer;transition:filter .15s,border-color .2s}
+.zone:hover{filter:brightness(.96)}
+.zone.zone-hi{border-color:var(--orange)!important;filter:brightness(.95)}
+.z-morning{border-color:#FF8C00;background:#FFF3E0}
+.z-noon   {border-color:#F9A825;background:#FFFDE7}
+.z-aftnoon{border-color:#1976D2;background:#E3F2FD}
+.z-night  {border-color:#7B1FA2;background:#F3E5F5}
+.z-label{font-size:16px;font-weight:900;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.z-morning .z-label{color:#E65100}.z-noon .z-label{color:#F57F17}
+.z-aftnoon .z-label{color:#1565C0}.z-night .z-label{color:#6A1B9A}
+.zchips{display:flex;flex-wrap:wrap;gap:6px;min-height:38px}
+.pchip{border-radius:99px;padding:7px 14px;font-size:14px;
+  font-weight:700;cursor:pointer;border:2px solid;
+  display:flex;align-items:center;gap:5px}
+.z-morning .pchip{background:#FFE0B2;border-color:#FF8C00;color:#BF360C}
+.z-noon    .pchip{background:#FFF9C4;border-color:#F9A825;color:#8D6E00}
+.z-aftnoon .pchip{background:#BBDEFB;border-color:#2196F3;color:#0D47A1}
+.z-night   .pchip{background:#E1BEE7;border-color:#9C27B0;color:#4A148C}
+.check-row{display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;width:100%;max-width:740px}
+
+/* ─────────── LEVEL 2 ─────────── */
+.sl-wrap{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.sl-card{background:#fff;border-radius:14px;box-shadow:var(--shadow);
+  padding:22px 28px;cursor:pointer;text-align:center;border:3px solid transparent;
+  min-width:160px;transition:all .2s}
+.sl-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.16)}
+.sl-card[data-m="hour"]{border-color:var(--blue)}
+.sl-card[data-m="half"]{border-color:var(--orange)}
+.sl-card[data-m="mixed"]{border-color:var(--purple)}
+.sl-icon{font-size:36px;margin-bottom:6px}
+.sl-name{font-size:18px;font-weight:900}.sl-sub{font-size:12px;color:#888;margin-top:3px}
+.clock-wrap{display:flex;flex-direction:column;align-items:center;gap:16px}
+.score-bar{font-size:14px;font-weight:700;color:#888;text-align:center;margin-bottom:4px}
+.clock-q{font-size:22px;font-weight:900;text-align:center;color:#333}
+.clock-choices{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.cchoice{padding:16px 26px;border-radius:14px;border:3px solid #DDD;
+  font-size:20px;font-weight:700;cursor:pointer;background:#fff;
+  font-family:'Noto Sans TC',sans-serif;transition:all .2s;min-width:110px;text-align:center}
+.cchoice:hover{border-color:var(--blue);background:#E3F2FD}
+.cchoice.correct{border-color:var(--green);background:#E8F5E9;color:#1B5E20}
+.cchoice.wrong{border-color:var(--red);background:#FFEBEE;color:#B71C1C}
+.clock-fb{font-size:20px;font-weight:900;text-align:center;min-height:30px;margin-top:4px}
+
+/* ─────────── LEVEL 3 ─────────── */
+.ch-timer{font-size:80px;font-weight:900;text-align:center;
+  color:var(--orange);line-height:1;margin-bottom:8px}
+.ch-timer.urg{color:var(--red);animation:pls .5s ease-in-out infinite}
+@keyframes pls{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+.ch-bar{width:100%;height:16px;background:#EEE;border-radius:99px;
+  overflow:hidden;margin-bottom:20px}
+.ch-fill{height:100%;background:var(--orange);border-radius:99px;transition:width 1s linear}
+.ch-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+.abtn{display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:#fff;border:3px solid #EEE;border-radius:16px;padding:18px 22px;
+  cursor:pointer;transition:all .15s;font-family:'Noto Sans TC',sans-serif;font-weight:700;
+  min-width:110px}
+.abtn:hover{border-color:var(--green);transform:scale(1.06)}
+.abtn:active{transform:scale(.94)}
+.abtn.dis{opacity:.38;cursor:not-allowed;pointer-events:none}
+.ab-em{font-size:40px}.ab-cnt{font-size:24px;font-weight:900;color:var(--green)}
+.ab-lb{font-size:14px;color:#555}
+
+/* ─────────── LEVEL 4 ─────────── */
+.jdisp{display:flex;align-items:center;justify-content:center;
+  gap:18px;margin-bottom:16px;flex-wrap:wrap}
+.tbox{background:#333;color:#fff;border-radius:12px;font-size:40px;
+  font-weight:900;padding:10px 22px;letter-spacing:3px;font-family:monospace;cursor:pointer}
+.tarbox{background:var(--yellow);color:#5D3A00;border-radius:12px;font-size:40px;
+  font-weight:900;padding:10px 22px;letter-spacing:3px;font-family:monospace;
+  border:3px dashed #E65100;cursor:pointer}
+.jtrack{display:flex;align-items:center;flex-wrap:wrap;padding:14px;
+  background:#F5F5F5;border-radius:12px;overflow-x:auto;margin-bottom:16px}
+.jnode{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:60px}
+.jtime{background:#fff;border:2px solid #CCC;border-radius:8px;
+  padding:7px 9px;font-size:14px;font-weight:700;font-family:monospace;
+  transition:all .3s;text-align:center;cursor:pointer}
+.jtime:hover{filter:brightness(.95)}
+.jtime.act{border-color:var(--blue);background:#E3F2FD;color:#0D47A1}
+.jtime.done{border-color:var(--green);background:#E8F5E9;color:#1B5E20}
+.jtime.tgt{border-color:var(--orange);background:#FFF3E0;color:#E65100;font-weight:900}
+.jarr{font-size:18px;color:#CCC;padding:0 3px;margin-top:-16px}
+.jarr.lit{color:var(--green)}
+.sbtn{background:var(--blue);color:#fff;border:none;border-radius:14px;
+  padding:16px 28px;font-size:19px;font-weight:900;
+  font-family:'Noto Sans TC',sans-serif;cursor:pointer;
+  transition:all .15s;box-shadow:0 4px 0 #1565C0}
+.sbtn:hover{transform:translateY(-2px)}.sbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #1565C0}
+.sbtn.done{background:#CCC;cursor:default;box-shadow:0 3px 0 #999}
+.jfb{font-size:18px;font-weight:900;text-align:center;min-height:26px;margin-top:12px}
+
+.flex-c{display:flex;align-items:center;justify-content:center}
+.w740{width:100%;max-width:740px}
+.mt10{margin-top:10px}
+
+@media(max-width:500px){
+  .tbox,.tarbox{font-size:30px;padding:8px 14px}
+  .title-text{font-size:26px}.lv-card,.sl-card{width:100%}
+  .zones{flex-direction:column}.cchoice{padding:13px 18px;font-size:17px}
+  #fab{font-size:17px;padding:12px 22px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TTS SPEED BAR ═══ -->
+<div id="spd-bar">
+  <label for="spd-range">🐢 語速</label>
+  <input id="spd-range" type="range" min="0.5" max="1.2" step="0.1" value="0.8">
+  <label>🐇</label>
+</div>
+
+<!-- ═══ FLOATING SPEAK BUTTON ═══ -->
+<button id="fab" onclick="reSpeakCurrent()">🔊 再說一次</button>
+
+<!-- ═══ CONFETTI ═══ -->
+<div class="confetti-wrap" id="cfwrap"></div>
+
+<!-- ═══ POPUP ═══ -->
+<div class="popup-ov" id="popup">
+  <div class="popup-box">
+    <div class="pop-emoji" id="pop-em">🎉</div>
+    <div class="pop-title" id="pop-ti"></div>
+    <div class="pop-msg"   id="pop-ms"></div>
+    <div class="pop-btns"  id="pop-bt"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ TITLE ═══════════════ -->
+<div class="screen active" id="screen-title">
+  <div class="title-emoji">⏰</div>
+  <div class="title-text">時間小達人</div>
+  <div class="title-sub">我的生活任務 🎮</div>
+  <div class="level-map">
+    <div class="lv-card" data-l="1" onclick="goLevel(1)" onmouseenter="speak('關卡一：我的一天')">
+      <div class="lc-icon">🌅</div><div class="lc-num">關卡 1</div>
+      <div class="lc-name">我的一天</div>
+      <div class="lc-hint">把每件事放進對的時段！</div>
+    </div>
+    <div class="lv-card" data-l="2" onclick="goLevel(2)" onmouseenter="speak('關卡二：時間轉盤')">
+      <div class="lc-icon">🕐</div><div class="lc-num">關卡 2</div>
+      <div class="lc-name">時間轉盤</div>
+      <div class="lc-hint">整點・半點・混合，每次10題！</div>
+    </div>
+    <div class="lv-card" data-l="3" onclick="goLevel(3)" onmouseenter="speak('關卡三：六十秒挑戰')">
+      <div class="lc-icon">⚡</div><div class="lc-num">關卡 3</div>
+      <div class="lc-name">60秒挑戰</div>
+      <div class="lc-hint">1分鐘能做多少件事？</div>
+    </div>
+    <div class="lv-card" data-l="4" onclick="goLevel(4)" onmouseenter="speak('關卡四：時間跳跳')">
+      <div class="lc-icon">🐸</div><div class="lc-num">關卡 4</div>
+      <div class="lc-name">時間跳跳</div>
+      <div class="lc-hint">數數看，時間跳到哪？</div>
+    </div>
+  </div>
+  <div style="margin-top:28px;font-size:14px;color:#8B5E00;text-align:center">
+    <a href="../" style="color:#B4572A;font-weight:700;text-decoration:none">← 回作品集</a>
+    　小宸老師設計©2026.11
+  </div>
+</div>
+
+<!-- ═══════════════ LEVEL 1 ═══════════════ -->
+<div class="screen" id="screen-1">
+  <div class="game-header w740">
+    <button class="back-btn" onclick="goTitle()">⬅</button>
+    <div class="level-badge">🌅 關卡 1：我的一天</div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="game-card w740">
+    <div class="game-title">
+      🌟 我的一天行程
+      <button class="si" onclick="speakInst(1)" title="聽說明">🔊</button>
+    </div>
+    <div class="game-inst" id="inst1">
+      第一步：點選一個活動（它會變成橘色）<br>
+      第二步：點下面的時段放進去<br>
+      放錯了？點放好的活動可以移回來！
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#aaa;margin-bottom:7px">▼ 點選活動</div>
+    <div class="pool" id="pool1"></div>
+    <div class="hint-bar" id="hint1">請點選一個活動開始！</div>
+    <div class="zones">
+      <div class="zone z-morning" id="z-morning" onclick="placeIn('morning')">
+        <div class="z-label">
+          🌅 早上
+          <button class="si" onclick="event.stopPropagation();speak('早上。請把早上的活動放進來。')">🔊</button>
+        </div>
+        <div class="zchips" id="zc-morning"></div>
+      </div>
+      <div class="zone z-noon" id="z-noon" onclick="placeIn('noon')">
+        <div class="z-label">
+          ☀️ 中午
+          <button class="si" onclick="event.stopPropagation();speak('中午。請把中午的活動放進來。')">🔊</button>
+        </div>
+        <div class="zchips" id="zc-noon"></div>
+      </div>
+      <div class="zone z-aftnoon" id="z-aftnoon" onclick="placeIn('aftnoon')">
+        <div class="z-label">
+          🌤️ 下午
+          <button class="si" onclick="event.stopPropagation();speak('下午。請把下午的活動放進來。')">🔊</button>
+        </div>
+        <div class="zchips" id="zc-aftnoon"></div>
+      </div>
+      <div class="zone z-night" id="z-night" onclick="placeIn('night')">
+        <div class="z-label">
+          🌙 晚上
+          <button class="si" onclick="event.stopPropagation();speak('晚上。請把晚上的活動放進來。')">🔊</button>
+        </div>
+        <div class="zchips" id="zc-night"></div>
+      </div>
+    </div>
+  </div>
+  <div class="check-row">
+    <button class="btn btn-gray btn-sm" onclick="initL1();speak('重新開始')">🔄 重新開始</button>
+    <button class="btn btn-green" onclick="checkL1()">✅ 檢查答案</button>
+  </div>
+</div>
+
+<!-- ═══════════════ LEVEL 2 ═══════════════ -->
+<div class="screen" id="screen-2">
+  <div class="game-header w740">
+    <button class="back-btn" id="l2back" onclick="l2GoBack()">⬅</button>
+    <div class="level-badge">🕐 關卡 2：時間轉盤</div>
+    <div style="width:40px"></div>
+  </div>
+
+  <!-- picker -->
+  <div id="l2pick" class="w740">
+    <div class="game-card w740">
+      <div class="game-title">
+        🕐 選擇挑戰模式
+        <button class="si" onclick="speak('請選擇挑戰模式。整點模式、半點模式、或是混合模式。每種模式有十題。')">🔊</button>
+      </div>
+      <div class="game-inst">請選一種模式開始，每種模式隨機出 10 題！</div>
+      <div class="sl-wrap">
+        <div class="sl-card" data-m="hour" onclick="startMode('hour')" onmouseenter="speak('整點模式，例如三點整，七點整')">
+          <div class="sl-icon">🔵</div>
+          <div class="sl-name">整點模式</div>
+          <div class="sl-sub">3:00 ／ 7:00 ／ 12:00</div>
+        </div>
+        <div class="sl-card" data-m="half" onclick="startMode('half')" onmouseenter="speak('半點模式，例如三點半，七點半')">
+          <div class="sl-icon">🟠</div>
+          <div class="sl-name">半點模式</div>
+          <div class="sl-sub">3:30 ／ 7:30 ／ 12:30</div>
+        </div>
+        <div class="sl-card" data-m="mixed" onclick="startMode('mixed')" onmouseenter="speak('混合模式，整點和半點都有')">
+          <div class="sl-icon">🟣</div>
+          <div class="sl-name">混合模式</div>
+          <div class="sl-sub">整點 ＋ 半點全混合！</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- game -->
+  <div id="l2game" style="display:none" class="w740">
+    <div class="game-card w740">
+      <div class="game-title" id="l2title">🔵 整點模式</div>
+      <div class="score-bar" id="l2sbar">第 1 / 10 題　✅ 0</div>
+      <div class="pdots" id="l2dots"></div>
+      <div class="clock-wrap">
+        <svg id="clksvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"
+             style="width:270px;height:270px">
+          <circle cx="150" cy="150" r="143" fill="#FFFDF5" stroke="#D4C49A" stroke-width="5"/>
+          <g id="clk-ticks"></g>
+          <g id="clk-mnums"></g>
+          <g id="clk-hnums"></g>
+          <line id="hhand" x1="150" y1="150" x2="150" y2="88"
+                stroke="#222" stroke-width="9" stroke-linecap="round"/>
+          <line id="mhand" x1="150" y1="150" x2="150" y2="60"
+                stroke="#E65100" stroke-width="5.5" stroke-linecap="round"/>
+          <circle cx="150" cy="150" r="9" fill="#222"/>
+          <circle cx="150" cy="150" r="4" fill="#E65100"/>
+        </svg>
+        <div class="clock-q" id="clkq" style="cursor:pointer" onclick="speakCurrentQ()">
+          現在是幾點？
+        </div>
+        <div class="clock-choices" id="clkch"></div>
+        <div class="clock-fb" id="clkfb"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ LEVEL 3 ═══════════════ -->
+<div class="screen" id="screen-3">
+  <div class="game-header w740">
+    <button class="back-btn" onclick="goTitle()">⬅</button>
+    <div class="level-badge">⚡ 關卡 3：60秒挑戰</div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="game-card w740">
+    <div class="game-title">
+      ⚡ 60秒挑戰！
+      <button class="si" onclick="speakInst(3)">🔊</button>
+    </div>
+    <div class="game-inst" id="inst3">
+      按下「開始」，在60秒內盡量點按鈕！<br>
+      看看1分鐘能做多少件事 🔥
+    </div>
+    <div class="ch-timer" id="chtimer">60</div>
+    <div class="ch-bar"><div class="ch-fill" id="chfill" style="width:100%"></div></div>
+    <div class="ch-actions">
+      <button class="abtn dis" id="aclap" onclick="doAct('clap')">
+        <span class="ab-em">👏</span>
+        <span class="ab-cnt" id="cnt-clap">0</span>
+        <span class="ab-lb">拍手</span>
+      </button>
+      <button class="abtn dis" id="ajump" onclick="doAct('jump')">
+        <span class="ab-em">🦘</span>
+        <span class="ab-cnt" id="cnt-jump">0</span>
+        <span class="ab-lb">跳一下</span>
+      </button>
+      <button class="abtn dis" id="atidy" onclick="doAct('tidy')">
+        <span class="ab-em">📚</span>
+        <span class="ab-cnt" id="cnt-tidy">0</span>
+        <span class="ab-lb">收拾桌面</span>
+      </button>
+    </div>
+    <div class="flex-c" style="gap:12px;flex-wrap:wrap">
+      <button class="btn btn-orange btn-lg" id="stbtn" onclick="startChallenge()">🚀 開始！</button>
+      <button class="btn btn-gray" id="rsbtn" onclick="resetChallenge()" style="display:none">🔄 再試一次</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ LEVEL 4 ═══════════════ -->
+<div class="screen" id="screen-4">
+  <div class="game-header w740">
+    <button class="back-btn" onclick="goTitle()">⬅</button>
+    <div class="level-badge">🐸 關卡 4：時間跳跳</div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="game-card w740">
+    <div class="game-title">
+      🐸 時間跳跳！
+      <button class="si" onclick="speakInst(4)">🔊</button>
+    </div>
+    <div class="game-inst" id="inst4">
+      每次按「跳10分鐘」，從現在時間一步步數到目標時間！
+    </div>
+    <div class="pdots" id="l4dots"></div>
+    <div class="jdisp">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#aaa;text-align:center;margin-bottom:4px">現在時間</div>
+        <div class="tbox" id="l4start" onclick="speakStartTime()">3:00</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:30px">➡️</div>
+        <div style="font-size:14px;font-weight:700;color:#888;cursor:pointer" id="l4plus" onclick="speakPlus()">+30分鐘</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#aaa;text-align:center;margin-bottom:4px">目標時間</div>
+        <div class="tarbox" id="l4tgt" onclick="speakTargetTime()">?:??</div>
+      </div>
+    </div>
+    <div class="jtrack" id="l4track"></div>
+    <div class="flex-c">
+      <button class="sbtn" id="jbtn" onclick="jumpStep()">🐸 跳10分鐘！</button>
+    </div>
+    <div class="jfb" id="l4fb"></div>
+  </div>
+  <div class="check-row">
+    <button class="btn btn-gray btn-sm" onclick="goTitle()">🏠 回首頁</button>
+    <button class="btn btn-purple" id="l4next" onclick="nextJump()" style="display:none">下一題 ➡️</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
+<script>
+/* ══════════════════════════════════════════════════════
+   TTS ENGINE
+══════════════════════════════════════════════════════ */
+let currentSpeakText = '歡迎來到時間小達人！請選擇一個關卡開始。';
+let zhVoice = null;
+let spdValue = 0.8;
+
+// Load voices (may be async in some browsers)
+function loadVoices(){
+  const vs = window.speechSynthesis.getVoices();
+  zhVoice = vs.find(v=>v.lang==='zh-TW')
+          || vs.find(v=>v.lang.startsWith('zh'))
+          || null;
+}
+if(window.speechSynthesis){
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+document.getElementById('spd-range').addEventListener('input',function(){
+  spdValue = parseFloat(this.value);
+});
+
+/*
+  speechGen : 每次說話 +1，被打斷的語音不會執行它的後續動作
+  speechLock: 重要語音（答對/答錯、倒數）播放中，滑過選項等次要語音不會插嘴
+  navToken  : 每次換頁 +1，舊頁面排程中的動作（跳下一題等）自動作廢
+*/
+let speechGen = 0, speechLock = false, navToken = 0;
+
+/* 移除表情符號，避免語音念出符號名稱 */
+function stripEmoji(t){
+  return String(t)
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/gu,'')
+    .replace(/\s+/g,' ').trim();
+}
+
+/* 立刻停止所有語音與排程（換頁時使用） */
+function stopSpeech(){
+  speechGen++;
+  speechLock = false;
+  clearTimeout(window._spdTimer);
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  document.getElementById('fab').classList.remove('speaking');
+}
+
+/**
+ * speak(text, callback, opts)
+ *  callback      : 語音「完整念完」後才執行
+ *  opts.lock     : 重要語音，播放中不會被次要語音打斷
+ *  opts.noRepeat : 不更新「再說一次」的內容
+ */
+function speak(text, callback, opts){
+  opts = opts || {};
+  if(speechLock && !opts.lock) return;
+  text = stripEmoji(text);
+  if(!opts.noRepeat) currentSpeakText = text;
+  const myGen = ++speechGen;
+  speechLock = !!opts.lock;
+  const fab = document.getElementById('fab');
+
+  let finished = false;
+  const finish = ()=>{
+    if(finished) return;
+    finished = true;
+    if(myGen === speechGen){
+      speechLock = false;
+      fab.classList.remove('speaking');
+      if(callback) callback();
+    }
+  };
+
+  const synth = window.speechSynthesis;
+  if(!synth){ setTimeout(finish, 700); return; }
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-TW'; u.rate = spdValue; u.pitch = 1.1;
+  if(zhVoice) u.voice = zhVoice;
+  u.onend = finish; u.onerror = finish;
+
+  const begin = ()=>{
+    if(myGen !== speechGen) return;
+    fab.classList.add('speaking');
+    synth.speak(u);
+    // 保險：部分裝置不回傳結束訊號，依字數與語速估算最長等待時間
+    setTimeout(finish, Math.max(1500, text.length * 450 / spdValue + 800));
+  };
+  const busy = synth.speaking || synth.pending;
+  synth.cancel();
+  // Chrome 在 cancel() 後立刻 speak() 偶爾沒聲音，稍等再說
+  busy ? setTimeout(begin, 80) : begin();
+}
+
+/* 延遲說話（等畫面換好）；換頁後自動作廢 */
+function speakDelayed(text, delayMs, callback, opts){
+  const tok = navToken;
+  clearTimeout(window._spdTimer);
+  window._spdTimer = setTimeout(()=>{
+    if(tok === navToken) speak(text, callback, opts);
+  }, delayMs || 0);
+}
+
+/* 換頁：停止語音、停止60秒計時、作廢舊排程 */
+function leavePage(){
+  navToken++;
+  stopSpeech();
+  if(typeof chtimer !== 'undefined' && chtimer){ clearInterval(chtimer); chtimer = null; }
+  if(typeof chgo !== 'undefined') chgo = false;
+  document.getElementById('popup').classList.remove('show');
+}
+
+function reSpeakCurrent(){ speak(currentSpeakText); }
+
+/* inst speakers */
+function speakInst(n){
+  const el = document.getElementById('inst'+n);
+  if(el) speak(el.innerText);
+}
+
+/* ══════════════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════════════ */
+function goTitle(){
+  leavePage();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-title').classList.add('active');
+  speakDelayed('歡迎來到時間小達人！請選擇一個關卡開始。', 300);
+}
+function goLevel(n){
+  leavePage();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+n).classList.add('active');
+  ({1:initL1,2:initL2,3:resetChallenge,4:initL4}[n])();
+}
+
+/* ══════════════════════════════════════════════════════
+   POPUP
+══════════════════════════════════════════════════════ */
+function showPopup(em,ti,ms,btns,spoken){
+  document.getElementById('pop-em').textContent=em;
+  document.getElementById('pop-ti').textContent=ti;
+  document.getElementById('pop-ms').textContent=ms;
+  const c=document.getElementById('pop-bt'); c.innerHTML='';
+  btns.forEach(b=>{
+    const el=document.createElement('button');
+    el.className='btn '+b.cls; el.textContent=b.lbl;
+    el.onclick=()=>{document.getElementById('popup').classList.remove('show');b.fn();};
+    c.appendChild(el);
+  });
+  document.getElementById('popup').classList.add('show');
+  speakDelayed(ti+' '+(spoken||ms), 250);
+}
+
+/* ══════════════════════════════════════════════════════
+   CONFETTI
+══════════════════════════════════════════════════════ */
+function confetti(){
+  const w=document.getElementById('cfwrap'); w.innerHTML='';
+  const cs=['#FF8C00','#FFD600','#4CAF50','#2196F3','#E91E63','#9C27B0','#F44336'];
+  for(let i=0;i<80;i++){
+    const e=document.createElement('div'); e.className='cf';
+    e.style.cssText=`left:${Math.random()*100}vw;top:-20px;
+      background:${cs[Math.floor(Math.random()*cs.length)]};
+      animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()}s`;
+    w.appendChild(e);
+  }
+  setTimeout(()=>w.innerHTML='',4500);
+}
+
+/* ══════════════════════════════════════════════════════
+   LEVEL 1
+══════════════════════════════════════════════════════ */
+const ACTS=[
+  {id:'a1',lbl:'⏰ 起床',  spk:'起床',   zone:'morning'},
+  {id:'a2',lbl:'🍳 早餐',  spk:'早餐',   zone:'morning'},
+  {id:'a3',lbl:'🎒 上學',  spk:'上學',   zone:'morning'},
+  {id:'a4',lbl:'🍱 午餐',  spk:'午餐',   zone:'noon'},
+  {id:'a5',lbl:'🏫 放學',  spk:'放學',   zone:'aftnoon'},
+  {id:'a6',lbl:'📝 功課',  spk:'功課',   zone:'aftnoon'},
+  {id:'a7',lbl:'🛁 洗澡',  spk:'洗澡',   zone:'night'},
+  {id:'a8',lbl:'😴 睡覺',  spk:'睡覺',   zone:'night'},
+];
+const ZONES=['morning','noon','aftnoon','night'];
+const ZSPK={morning:'早上',noon:'中午',aftnoon:'下午',night:'晚上'};
+let L1placed={}, L1sel=null;
+
+function initL1(){
+  L1placed={}; L1sel=null;
+  renderL1();
+  speakDelayed('我的一天行程！請點選一個活動，再選擇放進哪個時段。', 300);
+  currentSpeakText='請點選一個活動，再選擇放進哪個時段。';
+}
+
+function renderL1(){
+  /* pool */
+  const pool=document.getElementById('pool1'); pool.innerHTML='';
+  ACTS.forEach(a=>{
+    if(L1placed[a.id]) return;
+    const c=document.createElement('div');
+    c.className='achip'+(L1sel===a.id?' sel':'');
+    c.innerHTML=a.lbl;
+    c.onclick=()=>{
+      L1sel=(L1sel===a.id)?null:a.id;
+      if(L1sel){
+        speak(a.spk+'。請選擇時段。');
+        setHint(a.spk+' 已選！請點下面的時段放進去。', true);
+      } else {
+        speak('取消選擇。');
+        setHint('請點選一個活動！', false);
+      }
+      renderL1();
+    };
+    pool.appendChild(c);
+  });
+  /* placed chips */
+  ZONES.forEach(z=>{
+    const box=document.getElementById('zc-'+z); box.innerHTML='';
+    ACTS.filter(a=>L1placed[a.id]===z).forEach(a=>{
+      const c=document.createElement('div'); c.className='pchip';
+      c.innerHTML=a.lbl;
+      c.onclick=e=>{
+        e.stopPropagation();
+        speak(a.spk+'，移回來重新選。');
+        delete L1placed[a.id]; renderL1();
+      };
+      box.appendChild(c);
+    });
+  });
+}
+
+function setHint(msg, active){
+  const h=document.getElementById('hint1');
+  h.textContent=msg;
+  h.className='hint-bar'+(active?' active':'');
+}
+
+function placeIn(zone){
+  if(!L1sel) { speak('請先點選一個活動！'); return; }
+  const a=ACTS.find(x=>x.id===L1sel);
+  L1placed[L1sel]=zone;
+  L1sel=null;
+  const done=Object.keys(L1placed).length;
+  if(done<ACTS.length){
+    setHint('繼續點選其他活動！', false);
+    speak(a.spk+'，放進'+ZSPK[zone]+'。');
+  } else {
+    setHint('全部放好了！按「檢查答案」✅', false);
+    speak(a.spk+'，放進'+ZSPK[zone]+'。', ()=>{
+      speak('全部放好了！按檢查答案看看對不對。');
+    }, {lock:true});
+  }
+  renderL1();
+}
+
+function checkL1(){
+  if(Object.keys(L1placed).length<ACTS.length){
+    showPopup('😊','還沒放完！','把全部 '+ACTS.length+' 個活動都放進時段，再來檢查！',
+      [{lbl:'好的！',cls:'btn-orange',fn:()=>{}}]);
+    return;
+  }
+  let ok=0;
+  ACTS.forEach(a=>{if(L1placed[a.id]===a.zone)ok++;});
+  if(ok===ACTS.length){
+    confetti();
+    showPopup('🎉','全部正確！','你知道每件事在哪個時段了！超棒！',[
+      {lbl:'🏠 回首頁',cls:'btn-gray',fn:goTitle},
+      {lbl:'下一關 ➡️',cls:'btn-blue',fn:()=>goLevel(2)},
+    ]);
+  } else {
+    ACTS.forEach(a=>{
+      if(L1placed[a.id]&&L1placed[a.id]!==a.zone){
+        document.querySelectorAll('#zc-'+L1placed[a.id]+' .pchip').forEach(c=>{
+          if(c.textContent.includes(a.spk)){
+            c.style.background='#FFCDD2';c.style.borderColor='var(--red)';
+          }
+        });
+      }
+    });
+    const wrongs=ACTS.filter(a=>L1placed[a.id]&&L1placed[a.id]!==a.zone).map(a=>a.spk);
+    showPopup('🤔','再想想看！',ok+'/'+ACTS.length+' 正確。\n'+
+      (wrongs.length?wrongs.join('、')+'放錯時段了。\n點紅色活動移回來重新放！':''),[
+      {lbl:'繼續修改',cls:'btn-orange',fn:()=>{}}],
+      '答對'+ok+'個，一共'+ACTS.length+'個。'+wrongs.join('、')+'放錯時段了。請點紅色的活動，移回來重新放。');
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   LEVEL 2 – CLOCK
+══════════════════════════════════════════════════════ */
+(function buildFace(){
+  const cx=150,cy=150;
+  const tg=document.getElementById('clk-ticks');
+  const mg=document.getElementById('clk-mnums');
+  const hg=document.getElementById('clk-hnums');
+  for(let i=0;i<60;i++){
+    const ang=i*6*Math.PI/180;
+    const major=i%5===0;
+    const r1=major?127:136, r2=143;
+    const mk=document.createElementNS('http://www.w3.org/2000/svg','line');
+    mk.setAttribute('x1',cx+r1*Math.sin(ang));mk.setAttribute('y1',cy-r1*Math.cos(ang));
+    mk.setAttribute('x2',cx+r2*Math.sin(ang));mk.setAttribute('y2',cy-r2*Math.cos(ang));
+    mk.setAttribute('stroke',major?'#999':'#CCC');
+    mk.setAttribute('stroke-width',major?'2.5':'1');
+    tg.appendChild(mk);
+  }
+  const mLbls=[60,5,10,15,20,25,30,35,40,45,50,55];
+  mLbls.forEach((n,i)=>{
+    const ang=i*30*Math.PI/180, r=116;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',cx+r*Math.sin(ang));t.setAttribute('y',cy-r*Math.cos(ang)+4);
+    t.setAttribute('text-anchor','middle');t.setAttribute('font-size','11');
+    t.setAttribute('font-weight','700');t.setAttribute('fill','#E65100');
+    t.textContent=n; mg.appendChild(t);
+  });
+  const hLbls=[12,1,2,3,4,5,6,7,8,9,10,11];
+  hLbls.forEach((n,i)=>{
+    const ang=i*30*Math.PI/180, r=90;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',cx+r*Math.sin(ang));t.setAttribute('y',cy-r*Math.cos(ang)+7);
+    t.setAttribute('text-anchor','middle');t.setAttribute('font-size','22');
+    t.setAttribute('font-weight','900');t.setAttribute('fill','#222');
+    t.textContent=n; hg.appendChild(t);
+  });
+})();
+
+function setHands(h,m){
+  const cx=150,cy=150;
+  const ha=((h%12)*30+m*.5)*Math.PI/180;
+  const ma=(m*6)*Math.PI/180;
+  const hl=62,ml=82;
+  const hh=document.getElementById('hhand'),mh=document.getElementById('mhand');
+  hh.setAttribute('x2',cx+hl*Math.sin(ha));hh.setAttribute('y2',cy-hl*Math.cos(ha));
+  mh.setAttribute('x2',cx+ml*Math.sin(ma));mh.setAttribute('y2',cy-ml*Math.cos(ma));
+}
+
+let L2mode='hour',L2qs=[],L2idx=0,L2score=0,L2ans=false;
+let L2currentQ=null;
+
+function initL2(){
+  navToken++; stopSpeech();
+  document.getElementById('l2pick').style.display='';
+  document.getElementById('l2game').style.display='none';
+  speakDelayed('時間轉盤！請選擇整點模式、半點模式或混合模式。', 300);
+  currentSpeakText='請選擇整點模式、半點模式或混合模式。';
+}
+
+function l2GoBack(){
+  if(document.getElementById('l2game').style.display==='none') goTitle();
+  else initL2();
+}
+
+function genQs(mode){
+  const pool=[];
+  for(let h=1;h<=12;h++){
+    if(mode==='hour') pool.push({h,m:0});
+    else if(mode==='half') pool.push({h,m:30});
+    else { pool.push({h,m:0}); pool.push({h,m:30}); }
+  }
+  for(let i=pool.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [pool[i],pool[j]]=[pool[j],pool[i]];
+  }
+  return pool.slice(0,10);
+}
+
+function fmtT(h,m){return h+':'+(m===0?'00':'30');}
+function speakTime(h,m){
+  if(m===0) return h+'點整';
+  return h+'點三十分';
+}
+
+function genChoices(h,m,mode){
+  const right=fmtT(h,m);
+  const bag=new Set([right]);
+  let t=0;
+  while(bag.size<4&&t<200){
+    t++;
+    const wh=Math.floor(Math.random()*12)+1;
+    const wm=mode==='mixed'?(Math.random()<.4?(m===0?30:0):m):m;
+    const w=fmtT(wh,wm);
+    if(w!==right) bag.add(w);
+  }
+  return [...bag].sort(()=>Math.random()-.5);
+}
+
+function startMode(mode){
+  L2mode=mode; L2idx=0; L2score=0; L2ans=false;
+  L2qs=genQs(mode);
+  const titles={hour:'🔵 整點模式',half:'🟠 半點模式',mixed:'🟣 混合模式'};
+  const spks={hour:'整點模式開始！',half:'半點模式開始！',mixed:'混合模式開始！'};
+  document.getElementById('l2title').textContent=titles[mode];
+  document.getElementById('l2pick').style.display='none';
+  document.getElementById('l2game').style.display='';
+  speak(spks[mode], ()=>renderClkQ(), {lock:true});
+}
+
+function speakCurrentQ(){
+  if(L2currentQ){
+    speak('現在是幾點？請從下面選出正確答案。');
+  }
+}
+
+function renderClkQ(){
+  if(L2idx>=L2qs.length){
+    confetti();
+    const pct=Math.round(L2score/L2qs.length*100);
+    const em=pct>=90?'🏆':pct>=70?'🌟':pct>=50?'😊':'🤔';
+    const mn={hour:'整點',half:'半點',mixed:'混合'};
+    showPopup(em,'挑戰結束！',
+      mn[L2mode]+'模式：'+L2score+'/'+L2qs.length+' 題正確（'+pct+'%）！',[
+      {lbl:'再玩一次',cls:'btn-blue',fn:()=>startMode(L2mode)},
+      {lbl:'換模式',cls:'btn-gray',fn:initL2},
+      {lbl:'下一關 ➡️',cls:'btn-green',fn:()=>goLevel(3)},
+    ], mn[L2mode]+'模式，'+L2qs.length+'題答對'+L2score+'題！');
+    return;
+  }
+  const q=L2qs[L2idx]; L2ans=false; L2currentQ=q;
+
+  const dp=document.getElementById('l2dots'); dp.innerHTML='';
+  L2qs.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='dot'+(i<L2idx?' done':i===L2idx?' cur':'');
+    dp.appendChild(d);
+  });
+
+  document.getElementById('l2sbar').textContent=
+    '第 '+(L2idx+1)+' / '+L2qs.length+' 題　✅ '+L2score;
+  setHands(q.h,q.m);
+
+  const qText='現在是幾點？請選出正確答案。';
+  document.getElementById('clkq').textContent='🕐 現在是幾點？';
+  document.getElementById('clkfb').textContent='';
+  currentSpeakText=qText;
+
+  const choices=genChoices(q.h,q.m,L2mode);
+  const cc=document.getElementById('clkch'); cc.innerHTML='';
+  choices.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='cchoice'; btn.textContent=c;
+    // Parse for speaking
+    const parts=c.split(':');
+    const sh=parseInt(parts[0]), sm=parseInt(parts[1]);
+    btn.onmouseenter=()=>{ if(!L2ans) speak(speakTime(sh,sm), null, {noRepeat:true}); };
+    btn.onclick=()=>answerClk(c,fmtT(q.h,q.m),btn,cc,q);
+    cc.appendChild(btn);
+  });
+
+  // Auto-read question (previous speech, if any, has already finished
+  // by the time renderClkQ runs — see startMode/answerClk callbacks)
+  speakDelayed(qText, 200);
+}
+
+function answerClk(ans,right,btn,cc,q){
+  if(L2ans) return; L2ans=true;
+  cc.querySelectorAll('.cchoice').forEach(b=>{if(b.textContent===right)b.classList.add('correct');});
+  const fb=document.getElementById('clkfb');
+  if(ans===right){
+    btn.classList.add('correct');
+    fb.textContent='🎉 正確！'; fb.style.color='var(--green)';
+    L2score++;
+    const tok=navToken;
+    speak('答對了！'+speakTime(q.h,q.m)+'！', ()=>{
+      setTimeout(()=>{ if(tok===navToken){L2idx++;renderClkQ();} }, 400);
+    }, {lock:true});
+  } else {
+    btn.classList.add('wrong');
+    const rp=right.split(':');
+    fb.textContent='❌ 正確答案是 '+right; fb.style.color='var(--red)';
+    const tok=navToken;
+    speak('不對。正確答案是'+speakTime(parseInt(rp[0]),parseInt(rp[1]))+'。', ()=>{
+      setTimeout(()=>{ if(tok===navToken){L2idx++;renderClkQ();} }, 400);
+    }, {lock:true});
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   LEVEL 3
+══════════════════════════════════════════════════════ */
+let chtimer=null, chsecs=60, chgo=false, acts={clap:0,jump:0,tidy:0};
+
+function resetChallenge(){
+  clearInterval(chtimer); chtimer=null;
+  navToken++; stopSpeech();
+  chsecs=60; chgo=false; acts={clap:0,jump:0,tidy:0};
+  document.getElementById('chtimer').textContent='60';
+  document.getElementById('chtimer').classList.remove('urg');
+  document.getElementById('chfill').style.cssText='width:100%;background:var(--orange)';
+  ['clap','jump','tidy'].forEach(k=>{
+    document.getElementById('cnt-'+k).textContent='0';
+    document.getElementById('a'+k).classList.add('dis');
+  });
+  document.getElementById('stbtn').style.display='';
+  document.getElementById('rsbtn').style.display='none';
+  speakDelayed('六十秒挑戰！按開始，然後盡量點按鈕！', 300);
+  currentSpeakText='按開始，然後盡量點按鈕！';
+}
+
+function startChallenge(){
+  if(chgo) return; chgo=true;
+  document.getElementById('stbtn').style.display='none';
+  ['clap','jump','tidy'].forEach(k=>document.getElementById('a'+k).classList.remove('dis'));
+  speak('開始！', null, {lock:true, noRepeat:true});
+  chtimer=setInterval(()=>{
+    chsecs--;
+    document.getElementById('chtimer').textContent=chsecs;
+    document.getElementById('chfill').style.width=(chsecs/60*100)+'%';
+    if(chsecs===30) speak('還有三十秒！', null, {lock:true, noRepeat:true});
+    if(chsecs===10){
+      document.getElementById('chtimer').classList.add('urg');
+      document.getElementById('chfill').style.background='var(--red)';
+      speak('還有十秒！', null, {lock:true, noRepeat:true});
+    }
+    if(chsecs<=5&&chsecs>0) speak(String(chsecs), null, {lock:true, noRepeat:true});
+    if(chsecs<=0){clearInterval(chtimer);chtimer=null;endChallenge();}
+  },1000);
+}
+
+function doAct(k){
+  if(!chgo||chsecs<=0) return;
+  acts[k]++;
+  document.getElementById('cnt-'+k).textContent=acts[k];
+  const labels={clap:'拍手',jump:'跳',tidy:'收拾'};
+  speak(labels[k]+acts[k], null, {noRepeat:true});
+  const b=document.getElementById('a'+k);
+  b.style.background='#E8F5E9'; setTimeout(()=>b.style.background='',130);
+}
+
+function endChallenge(){
+  ['clap','jump','tidy'].forEach(k=>document.getElementById('a'+k).classList.add('dis'));
+  document.getElementById('rsbtn').style.display='';
+  const tot=acts.clap+acts.jump+acts.tidy;
+  confetti();
+  showPopup('🔥','1分鐘結束！',
+    '你總共做了 '+tot+' 件事！\n👏拍手 '+acts.clap+' 次　🦘跳 '+acts.jump+' 次　📚收拾 '+acts.tidy+' 次',[
+    {lbl:'再玩一次',cls:'btn-orange',fn:resetChallenge},
+    {lbl:'下一關 ➡️',cls:'btn-green',fn:()=>goLevel(4)},
+  ], '你總共做了'+tot+'件事！拍手'+acts.clap+'次，跳'+acts.jump+'次，收拾'+acts.tidy+'次。一分鐘可以做很多事喔！');
+}
+
+/* ══════════════════════════════════════════════════════
+   LEVEL 4
+══════════════════════════════════════════════════════ */
+const JQS=[
+  {sh:3,sm:0,add:30},{sh:1,sm:0,add:20},{sh:5,sm:0,add:40},
+  {sh:8,sm:30,add:20},{sh:2,sm:0,add:50},{sh:10,sm:0,add:30},{sh:4,sm:30,add:30}
+];
+let L4idx=0, L4step=0, L4steps=0, L4done=false;
+
+function initL4(){ navToken++; stopSpeech(); L4idx=0; loadJQ(); }
+function tadd(h,m,add){const t=h*60+m+add;return{h:Math.floor(t/60)%24,m:t%60};}
+function ft(h,m){return h+':'+(m===0?'00':String(m).padStart(2,'0'));}
+function spkTime(h,m){ return m===0?h+'點整':h+'點'+m+'分'; }
+
+function speakStartTime(){
+  const t=document.getElementById('l4start').textContent;
+  const p=t.split(':'); speak('現在時間是'+spkTime(parseInt(p[0]),parseInt(p[1])));
+}
+function speakTargetTime(){
+  const t=document.getElementById('l4tgt').textContent;
+  if(t==='?:??') speak('目標時間還不知道，請繼續跳！');
+  else { const p=t.split(':'); speak('目標時間是'+spkTime(parseInt(p[0]),parseInt(p[1]))); }
+}
+function speakPlus(){
+  const q=JQS[L4idx]; if(!q) return;
+  speak('再過'+q.add+'分鐘以後');
+}
+
+function loadJQ(){
+  L4done=false;
+  if(L4idx>=JQS.length){
+    confetti();
+    showPopup('🏆','全部完成！','你會用數數計算時間了！超厲害！',[
+      {lbl:'🏠 回首頁',cls:'btn-gray',fn:goTitle},
+      {lbl:'再玩一次',cls:'btn-purple',fn:initL4},
+    ]);
+    return;
+  }
+  const q=JQS[L4idx]; L4steps=q.add/10; L4step=0;
+
+  const dp=document.getElementById('l4dots'); dp.innerHTML='';
+  JQS.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='dot'+(i<L4idx?' done':i===L4idx?' cur':'');
+    dp.appendChild(d);
+  });
+
+  document.getElementById('l4start').textContent=ft(q.sh,q.sm);
+  document.getElementById('l4tgt').textContent='?:??';
+  document.getElementById('l4plus').textContent='+'+q.add+'分鐘後';
+  document.getElementById('l4fb').textContent='';
+  document.getElementById('l4next').style.display='none';
+  document.getElementById('jbtn').classList.remove('done');
+
+  const tr=document.getElementById('l4track'); tr.innerHTML='';
+  for(let i=0;i<=L4steps;i++){
+    const t=tadd(q.sh,q.sm,i*10);
+    const nd=document.createElement('div'); nd.className='jnode';
+    const tl=document.createElement('div');
+    tl.id='jt'+i;
+    tl.className='jtime'+(i===0?' act':'')+(i===L4steps?' tgt':'');
+    tl.textContent=(i===L4steps)?'?:??':ft(t.h,t.m);
+    tl.onclick=(function(h,m,isTarget){
+      return function(){
+        if(isTarget && document.getElementById('l4tgt').textContent==='?:??'){
+          speak('還沒到目標，繼續跳！');
+        } else {
+          speak(spkTime(h,m));
+        }
+      };
+    })(t.h,t.m,i===L4steps);
+    nd.appendChild(tl); tr.appendChild(nd);
+    if(i<L4steps){
+      const ar=document.createElement('div');
+      ar.id='ja'+i; ar.className='jarr'; ar.textContent='→';
+      tr.appendChild(ar);
+    }
+  }
+
+  const msg='現在時間是'+spkTime(q.sh,q.sm)+'，加'+q.add+'分鐘後是幾點？按跳十分鐘，一步一步數！';
+  speakDelayed(msg, 300);
+  currentSpeakText=msg;
+}
+
+function jumpStep(){
+  if(L4done) return;
+  const q=JQS[L4idx];
+  if(L4step<L4steps){
+    const cur=document.getElementById('jt'+L4step);
+    cur.classList.remove('act'); cur.classList.add('done');
+    const ar=document.getElementById('ja'+L4step);
+    if(ar) ar.classList.add('lit');
+    L4step++;
+    const nxt=document.getElementById('jt'+L4step);
+    nxt.classList.add('act');
+    const t=tadd(q.sh,q.sm,L4step*10);
+    if(L4step===L4steps){
+      const tg=tadd(q.sh,q.sm,q.add);
+      nxt.textContent=ft(tg.h,tg.m);
+      document.getElementById('l4tgt').textContent=ft(tg.h,tg.m);
+      const msg='到了！'+spkTime(q.sh,q.sm)+'加'+q.add+'分鐘，等於'+spkTime(tg.h,tg.m)+'！';
+      document.getElementById('l4fb').textContent=
+        '🎉 '+ft(q.sh,q.sm)+' + '+q.add+'分鐘 = '+ft(tg.h,tg.m)+'！';
+      document.getElementById('l4fb').style.color='var(--green)';
+      document.getElementById('jbtn').classList.add('done');
+      document.getElementById('l4next').style.display='';
+      L4done=true;
+      speak(spkTime(t.h,t.m), ()=>{ speak(msg, null, {lock:true}); }, {lock:true});
+    } else {
+      speak(spkTime(t.h,t.m));
+    }
+  }
+}
+function nextJump(){ navToken++; stopSpeech(); L4idx++; loadJQ(); }
+
+/* ── boot ── */
+speakDelayed('歡迎來到時間小達人！請選擇一個關卡開始。', 800);
+</script>
+</body>
+</html>

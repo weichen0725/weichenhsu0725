@@ -5,6 +5,7 @@
 | 作品 | 資料夾 | 說明 |
 | --- | --- | --- |
 | 3D 生活管理小達人 | `life-management-3d/` | 自我照顧、家庭生活、社區參與、危機應變四個模組，練習工作分析步驟 |
+| 時間小達人：我的生活任務 | `time-master/` | 一天的時段、整點與半點、60 秒體感、經過時間，全程語音報讀 |
 
 ## 網址
 
@@ -12,6 +13,7 @@
 
 - 作品目錄：https://weichen0725.github.io/weichenhsu0725/
 - 3D 生活管理小達人：https://weichen0725.github.io/weichenhsu0725/life-management-3d/
+- 時間小達人：https://weichen0725.github.io/weichenhsu0725/time-master/
 
 ## 備註
 
