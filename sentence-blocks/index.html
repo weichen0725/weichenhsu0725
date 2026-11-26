@@ -14,14 +14,14 @@
    PICTURE: the rail itself, with a hand-drawn scene card above it; on home, a finished demo rail
    COLOUR and TYPE: white ground, toy-yellow band, grammar colours from the spec; rounded Huninn, Kai option
    LAYOUT: single column, scene → rail → tray → big buttons; settings in a side sheet */
-:root{color-scheme:light dark;
+:root{color-scheme:light;
 --bg:light-dark(#FFFFFF,#16171D);--ink:light-dark(#2A211C,#F4EFEA);--mute:light-dark(#5E534C,#C9C0B8);
 --card:light-dark(#F2F4F8,#22242D);--line:light-dark(#CED3DD,#3D4150);
 --band:light-dark(#FFC83D,#3A2F14);--bandInk:light-dark(#2A211C,#FFE7A6);
 --pri:light-dark(#1A44C2,#9DB7FF);--priInk:light-dark(#FFFFFF,#0C1A3F);
 --sky:light-dark(#EAF5FF,#1C2733);--me:light-dark(#E3F6D8,#1E3320);--meLine:light-dark(#7CC26A,#3F7A38);
 --cs0:32px;--font:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
-:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+:root[data-theme]{color-scheme:light}
 html[data-size=l]{--cs0:38px}html[data-size=xl]{--cs0:44px}
 html[data-font=kai]{--font:"LXGW WenKai TC","BiauKai","DFKai-SB","Noto Sans TC",serif}
 html[data-hc="1"]{color-scheme:light;--bg:#fff;--ink:#000;--mute:#000;--card:#fff;--line:#000;--band:#FFE14D;--bandInk:#000;--pri:#0030B0;--priInk:#fff;--sky:#fff;--me:#fff;--meLine:#000}
@@ -77,7 +77,7 @@ html[data-hc="1"] .blk{--rt:#000;--rd:#000;border-width:4px}html[data-hc="1"] .s
 .blk.dragging{z-index:50;opacity:.9;transition:none;box-shadow:0 16px 26px rgba(0,0,0,.28)}
 .blk.sel{transform:translateY(-6px);outline:4px dashed var(--pri);outline-offset:5px}
 .blk.hl{transform:scale(1.06);box-shadow:0 0 0 7px #FFD54F,0 4px 0 var(--rd)}
-.blk.demo{min-height:70px;min-width:80px;padding:14px 16px 8px;--cs:26px}
+.blk.mini{min-height:70px;min-width:80px;padding:14px 16px 8px;--cs:26px}
 [data-hint=soft] .blk{background:#fff;color:#222;border-color:#A5ABB8;border-left:10px solid var(--rd);box-shadow:0 4px 0 #A5ABB8}
 [data-hint=soft] .blk::after{background:#fff;border-color:#A5ABB8}
 [data-hint=soft] .slot{background:var(--card)}
@@ -1070,7 +1070,7 @@ function home(){V.task=false;app.dataset.hint='full';try{SY&&SY.cancel()}catch(e
  if(V.stage==='custom'&&!cus.length)V.stage='low';
  const demo=[['subj','弟弟'],['loc','在公園'],['verb','騎腳踏車']];
  app.innerHTML=`<section class="hero"><div class="hero-in"><div><p class="brand">小宸老師設計©2026.11</p><h1>句子積木工廠</h1><p class="lead">看圖、拿積木、拼句子。每一種顏色代表句子裡的一種角色：黃色是「誰」、紫色是「在哪裡」、綠色是「做什麼」。拼好了，句子會唸給你聽。</p></div>
- <div class="demo" aria-hidden="true"><div class="scene" id="demo3d">${svgPic('bike')}</div><div class="track">${demo.map(([r,w])=>`<span class="blk demo r-${r} k-${ROLES[r].knob}">${ri(r)}<span class="w">${zy(w)}</span></span>`).join('')}<span class="stx" style="--cs:26px">${zy('。')}</span></div></div></div></section>
+ <div class="demo" aria-hidden="true"><div class="scene" id="demo3d">${svgPic('bike')}</div><div class="track">${demo.map(([r,w])=>`<span class="blk mini r-${r} k-${ROLES[r].knob}">${ri(r)}<span class="w">${zy(w)}</span></span>`).join('')}<span class="stx" style="--cs:26px">${zy('。')}</span></div></div></div></section>
  <section class="band"><div class="wrap"><div class="sec"><h2>選年段</h2><div class="stages">${stages.map(s=>`<button class="stg" data-act="stage" data-v="${s.v}" aria-pressed="${s.v===V.stage}"><b>${s.n}</b><small>${s.g}｜${esc(s.d)}</small><span class="chips">${s.c.map(r=>`<span class="chip r-${r}">${ri(r)}${ROLES[r].short}</span>`).join('')}</span></button>`).join('')}</div></div>
  <div class="sec"><h2>選遊戲</h2><h3 class="grp-h">單句練習</h3><div class="mods">
  <div class="mod"><svg class="art" viewBox="0 0 220 120" aria-hidden="true"><rect x="8" y="86" width="204" height="12" rx="6" fill="#CED3DD"/><rect x="14" y="40" width="58" height="44" rx="12" fill="#FFF8E1" stroke="#FFA000" stroke-width="4"/><rect x="80" y="40" width="58" height="44" rx="12" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="4"/><rect x="148" y="40" width="58" height="44" rx="12" fill="#E8F5E9" stroke="#2E7D32" stroke-width="4" stroke-dasharray="8 6"/><rect x="150" y="6" width="58" height="44" rx="12" fill="#E8F5E9" stroke="#2E7D32" stroke-width="4" transform="rotate(-12 179 28)"/></svg><b>句子積木工廠</b><p>把彩色積木放進軌道，拼出完整的句子。可以拖曳，也可以「點積木、再點位置」。</p><button class="pb" data-act="start" data-m="factory">開始${UI.next}</button></div>
